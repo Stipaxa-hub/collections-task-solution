@@ -9,12 +9,12 @@ import java.util.function.Function;
 public class Range<T extends Comparable<T>> implements Set<T> {
     private T start;
     private T finish;
-    private Function<T, T> functionIteration;
+    private Function<T, T> functionIncrementation;
 
-    private Range(T start, T finish, Function<T, T> functionIteration) {
+    private Range(T start, T finish, Function<T, T> functionIncrementation) {
         this.start = start;
         this.finish = finish;
-        this.functionIteration = functionIteration;
+        this.functionIncrementation = functionIncrementation;
     }
 
     public static <R extends Comparable<R>> Range<R> of(R start, R finish) {
@@ -32,10 +32,10 @@ public class Range<T extends Comparable<T>> implements Set<T> {
         T current = start;
         while (current.compareTo(finish) <= 0) {
             size++;
-            if (functionIteration != null) {
-                current = functionIteration.apply(current);
+            if (functionIncrementation != null) {
+                current = functionIncrementation.apply(current);
             } else {
-                current = next(current);
+                current = increment(current);
             }
         }
         return size;
@@ -50,7 +50,25 @@ public class Range<T extends Comparable<T>> implements Set<T> {
     }
 
     public Iterator<T> iterator() {
-        return new RangeIterator();
+        Iterator<T> iterator = new Iterator<T>() {
+            private T current = start;
+            @Override
+            public boolean hasNext() {
+                return current.compareTo(finish) <= 0;
+            }
+
+            @Override
+            public T next() {
+                T value = current;
+                if (functionIncrementation != null) {
+                    current = functionIncrementation.apply(current);
+                } else {
+                    current = increment(current);
+                }
+                return value;
+            }
+        };
+        return iterator;
     }
 
     public Object[] toArray() {
@@ -89,7 +107,7 @@ public class Range<T extends Comparable<T>> implements Set<T> {
     public void clear() {
     }
 
-    private T next(T current) {
+    private T increment(T current) {
         if (current instanceof Integer) {
             return (T) (Integer.valueOf(((Integer) (current)) + 1));
         } else if (current instanceof Float) {
@@ -98,24 +116,6 @@ public class Range<T extends Comparable<T>> implements Set<T> {
             return (T) (Double.valueOf(((Double) current) + 0.1));
         } else {
             throw new RuntimeException("Illegal type!");
-        }
-    }
-
-    private class RangeIterator implements Iterator<T> {
-        private T current = start;
-        @Override
-        public boolean hasNext() {
-            return current.compareTo(finish) < 0;
-        }
-
-        @Override
-        public T next() {
-            if (!hasNext()) {
-                throw new RuntimeException("No next elements!");
-            }
-            T value = current;
-            current = functionIteration.apply(current);
-            return value;
         }
     }
 }
