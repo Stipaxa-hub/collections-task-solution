@@ -1,5 +1,6 @@
 package co.inventorsoft.academy.collections.model;
 
+import com.inventorsoft.academy.collections.model.Range;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
